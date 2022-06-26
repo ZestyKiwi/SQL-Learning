@@ -1,0 +1,24 @@
+-- Temp Table
+Drop table if exists #PercentPopulationVaccinated
+Create Table #PercentPopulationVaccinated
+(
+Continent nvarchar(255),
+Location nvarchar(255),
+Date datetime,
+Population numeric,
+New_vaccinations numeric,
+CumulativePeopleVacinated numeric,
+)
+Insert into #PercentPopulationVaccinated
+Select dea.continent, dea.location, dea.date, dea.population, (vac.new_vaccinations), SUM(cast(vac.new_vaccinations as bigint)) over (Partition by dea.location Order by dea.location, dea.date) as CumulativePeopleVacinated
+From PortfolioProject..CovidDeaths dea
+join PortfolioProject..CovidVacinations vac
+	on dea.location = vac.location
+	and dea.date = vac.date
+where dea.continent is not null
+order by 2,3
+
+
+select Distinct Continent, Location,date, Population, New_vaccinations, CumulativePeopleVacinated, (CumulativePeopleVacinated/Population)*100 as VaccinationRate From #PercentPopulationVaccinated
+Where location like '%kingdom%'
+order by 1,2
